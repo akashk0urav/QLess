@@ -25,6 +25,7 @@ DEBUG = os.getenv("DEBUG") == "True"
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
 
 
+
 # --------------------------------------------------
 # APPLICATIONS
 # --------------------------------------------------
@@ -48,6 +49,8 @@ INSTALLED_APPS = [
     'apps.queues.apps.QueuesConfig',
 ]
 
+# Custom user model
+AUTH_USER_MODEL = "accounts.User"
 
 # --------------------------------------------------
 # MIDDLEWARE
