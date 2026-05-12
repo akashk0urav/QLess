@@ -15,6 +15,12 @@ services:
       - mysql_data:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password
 
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpw"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
   redis:
     image: redis:7-alpine
     container_name: qless_redis
@@ -26,16 +32,29 @@ services:
     build: .
     container_name: qless_web
     restart: always
-    command: python manage.py runserver 0.0.0.0:8000
+
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        sleep 15 &&
+        python manage.py migrate &&
+        python manage.py runserver 0.0.0.0:8000
+      "
+
     volumes:
       - .:/app
+
     ports:
       - "8000:8000"
+
     env_file:
       - .env
+
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
 volumes:
   mysql_data:
