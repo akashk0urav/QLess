@@ -5,7 +5,7 @@ from .models import User, UserType
 from .serializers import CustomerOTPSerializer, CustomerVerifyOTPSerializer, LoginSerializer, SignUpSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-
+from .otp_service import generate_otp, store_otp,delete_stored_otp,get_stored_otp
 
 # Create your views here.
 
@@ -26,10 +26,13 @@ def customer_otp_request(request):
         return Response(serializer.errors, status=400)
     phone = serializer.validated_data['phone']
     # hardcoded otp for testing
+    otp=generate_otp()
+    store_otp(phone, otp)
+    print(f"OTP for {phone} is {otp}")  # In real application, send OTP via SMS gateway
     return Response(
         {
             "message":"OTP sent to phone number",
-            "otp":"123456"
+            "otp": otp
         }
     )
 
@@ -43,14 +46,17 @@ def customer_otp_verify(request):
     
     phone = serializer.validated_data['phone']
     otp = serializer.validated_data['otp']
+    stored_otp = get_stored_otp(phone)
 
     # hardcoded otp for testing
-    if otp != "123456":
+    if otp != stored_otp:
         return Response(
             {
                 "error": "Invalid OTP"
             }, status=401
         )
+    delete_stored_otp(phone)  # OTP is valid, delete it from Redis
+    
     # get or create user based on phone number its try to find user with phone number 
     # if not found then create new user with phone number and default user type as customer
     user, created = User.objects.get_or_create(
