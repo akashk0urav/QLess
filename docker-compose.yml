@@ -1,5 +1,4 @@
 services:
-
   db:
     image: mysql:8.0
     container_name: qless_db
@@ -55,6 +54,3 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
-
-volumes:
-  mysql_data:
