@@ -1,0 +1,15 @@
+from rest_framework.permissions import BasePermission
+
+class IsAdmin(BasePermission):
+    def has_permission(self, request, view):
+        return (request.user 
+                and request.user.is_authenticated 
+                and request.user.user_type == "admin"
+                )
+    
+class IsOwner(BasePermission):
+    def has_permission(self, request, view):
+        return (request.user 
+                and request.user.is_authenticated 
+                and request.user.user_type == "owner"
+                )
